@@ -52,20 +52,59 @@ async def verify_webhook(
     raise HTTPException(status_code=403, detail="Verification failed")
 
 
-# ── POST /api/webhook — Inbound Message Handler ─────────────────────────────
 @router.post("/webhook")
 async def handle_inbound(request: Request, background_tasks: BackgroundTasks):
     """
     Receive an inbound WhatsApp message from Meta's Cloud API.
 
     Flow:
-      1. Parse the webhook payload
-      2. Extract message details (phone, text, message_id)
-      3. Resolve tenant_id from the phone_number_id
-      4. Fire the LangGraph agent pipeline as a background task
-      5. Return 200 immediately (Meta requires < 5s)
+      1. Validate payload signature (X-Hub-Signature-256) if app secret is configured
+      2. Parse the webhook payload
+      3. Extract message details (phone, text, message_id)
+      4. Resolve tenant_id from the phone_number_id
+      5. Fire the LangGraph agent pipeline as a background task
+      6. Return 200 immediately (Meta requires < 5s)
     """
-    body: dict[str, Any] = await request.json()
+    settings = get_settings()
+    body_bytes = await request.body()
+
+    # Webhook signature security (X-Hub-Signature-256)
+    if settings.whatsapp_app_secret:
+        signature_header = request.headers.get("X-Hub-Signature-256")
+        if not signature_header:
+            logger.warning("Missing X-Hub-Signature-256 header when secret is configured")
+            raise HTTPException(status_code=403, detail="Signature missing")
+        
+        try:
+            parts = signature_header.split("=")
+            if len(parts) == 2 and parts[0] == "sha256":
+                expected_sig = parts[1]
+                import hmac
+                import hashlib
+                actual_sig = hmac.new(
+                    settings.whatsapp_app_secret.encode("utf-8"),
+                    body_bytes,
+                    hashlib.sha256
+                ).hexdigest()
+                if not hmac.compare_digest(actual_sig, expected_sig):
+                    logger.warning("Invalid X-Hub-Signature-256 signature detected")
+                    raise HTTPException(status_code=403, detail="Invalid signature")
+            else:
+                logger.warning("Malformed X-Hub-Signature-256 header")
+                raise HTTPException(status_code=400, detail="Malformed signature header")
+        except Exception as exc:
+            if isinstance(exc, HTTPException):
+                raise exc
+            logger.error("Error validating webhook signature: %s", exc)
+            raise HTTPException(status_code=403, detail="Signature validation failed")
+
+    # Parse JSON body
+    import json
+    try:
+        body: dict[str, Any] = json.loads(body_bytes)
+    except Exception as exc:
+        logger.error("Failed to parse JSON body: %s", exc)
+        raise HTTPException(status_code=400, detail="Invalid JSON body")
 
     # Meta sends various webhook types — we only care about messages
     # Payload structure: body.entry[].changes[].value.messages[]

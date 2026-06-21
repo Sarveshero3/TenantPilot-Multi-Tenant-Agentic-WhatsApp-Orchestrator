@@ -41,6 +41,10 @@ class Settings(BaseSettings):
         default="tenantpilot_verify_secret",
         description="Shared secret for Meta webhook verification challenge",
     )
+    whatsapp_app_secret: str = Field(
+        default="",
+        description="Meta App Secret key used to validate webhook signature (X-Hub-Signature-256)",
+    )
 
     # ── LLM (NVIDIA AI Endpoints — free tier) ───────────────────────────────
     nvidia_api_key: str = Field(

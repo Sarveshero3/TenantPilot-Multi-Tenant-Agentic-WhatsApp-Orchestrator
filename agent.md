@@ -468,7 +468,7 @@ LOG_LEVEL=INFO
 | 7 | Dockerfile + Docker Compose (Task 6) | Claude Opus 4.6 | ✅ COMPLETE |
 | 8 | Debugging (any phase) | Gemini 3.5 Flash → Sonnet → Opus | ⬜ AS NEEDED |
 | 9 | README + docs | Claude Opus 4.6 | ✅ COMPLETE |
-| 10 | Final cleanup/refactor | Claude Sonnet 4.6 (Thinking) | ⬜ NOT STARTED |
+| 10 | Final cleanup/refactor & Bonus Tasks | Gemini 3.5 Flash (High) | ✅ COMPLETE |
 
 ---
 
@@ -514,6 +514,21 @@ LOG_LEVEL=INFO
 - **Context:** Need a "lightweight" dashboard per assignment spec.
 - **Decision:** Vite for fast dev, React for component model, Tailwind for rapid styling.
 - **Rationale:** No SSR needed. Pure SPA is simplest. Tailwind matches "clean design" criterion.
+
+### ADR-007: Webhook Security (X-Hub-Signature-256)
+- **Context:** Ensure webhook payloads originate from Meta.
+- **Decision:** Calculate HMAC SHA256 using `whatsapp_app_secret` when configured.
+- **Rationale:** Provides native request signing verification in FastAPI. If not configured, gracefully falls back to allow local mock testing.
+
+### ADR-008: Inbound Media Multimodal Parsing
+- **Context:** Support analyzing user images in the agent.
+- **Decision:** Build LangChain multimodal HumanMessage with image block if message_type is image.
+- **Rationale:** Nemotron / multimodal models natively process images when sent as image content parts.
+
+### ADR-009: Sentiment Handover (NEEDS_HUMAN)
+- **Context:** Bot needs to halt auto-replies when user is frustrated.
+- **Decision:** LLM generates a tool call `{"tool": "human_handover"}`. Dispatcher transitions session status to `NEEDS_HUMAN`. Subsequent webhook triggers short-circuit in `acknowledge` node without launching LLM/dispatcher. Dashboard displays needs human session cards highlighted in red.
+- **Rationale:** Meets all requirements for agentic fallback and prevents repeating loops.
 
 ---
 

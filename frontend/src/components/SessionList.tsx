@@ -76,7 +76,9 @@ export function SessionList({
             const preview = previews[session.id]
             return (
               <button
-                className={`session-card${session.id === selectedSessionId ? ' session-card-active' : ''}`}
+                className={`session-card${session.id === selectedSessionId ? ' session-card-active' : ''}${
+                  session.status === 'NEEDS_HUMAN' ? ' session-card-needs-human' : ''
+                }`}
                 key={session.id}
                 type="button"
                 onClick={() => onSelectSession(session.id)}

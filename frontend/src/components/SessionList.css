@@ -88,3 +88,17 @@
     transform: translateY(0);
   }
 }
+
+.session-card-needs-human {
+  border-color: rgba(239, 68, 68, 0.4);
+  background: rgba(239, 68, 68, 0.08);
+}
+.session-card-needs-human:hover {
+  border-color: rgba(239, 68, 68, 0.6);
+  background: rgba(239, 68, 68, 0.12);
+}
+.session-card-needs-human.session-card-active {
+  border-color: rgba(239, 68, 68, 0.7);
+  background: rgba(239, 68, 68, 0.16);
+  box-shadow: inset 0 0 0 1px rgba(239, 68, 68, 0.22), 0 18px 46px rgba(239, 68, 68, 0.18);
+}

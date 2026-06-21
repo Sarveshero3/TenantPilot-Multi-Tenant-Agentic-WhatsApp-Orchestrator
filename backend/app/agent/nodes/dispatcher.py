@@ -114,11 +114,15 @@ async def dispatcher_node(state: AgentState) -> dict:
         ChatSession.customer_phone == customer_phone,
     )
     if session:
-        session.status = SessionStatus.WAITING_FOR_BOT
+        session.status = (
+            SessionStatus.NEEDS_HUMAN
+            if response_type == "handover"
+            else SessionStatus.WAITING_FOR_BOT
+        )
         session.is_typing = False
         session.updated_at = now
         await session.save()
-        logger.debug("Session updated: status=WAITING_FOR_BOT, is_typing=False")
+        logger.debug("Session updated: status=%s, is_typing=False", session.status)
 
     return {}  # Terminal node — no new state fields needed
 

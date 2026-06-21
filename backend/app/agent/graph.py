@@ -58,9 +58,22 @@ def build_agent_graph() -> StateGraph:
     graph.add_node("llm_reasoning", llm_reasoning_node)
     graph.add_node("dispatcher", dispatcher_node)
 
-    # ── Add edges (linear pipeline) ──────────────────────────────────────────
+    def route_after_acknowledge(state: AgentState) -> str:
+        """Determine whether to proceed or end immediately if the session is human-monitored."""
+        if state.get("skip_agent"):
+            return END
+        return "context_retriever"
+
+    # ── Add edges ────────────────────────────────────────────────────────────
     graph.add_edge(START, "acknowledge")
-    graph.add_edge("acknowledge", "context_retriever")
+    graph.add_conditional_edges(
+        "acknowledge",
+        route_after_acknowledge,
+        {
+            "context_retriever": "context_retriever",
+            END: END,
+        }
+    )
     graph.add_edge("context_retriever", "llm_reasoning")
     graph.add_edge("llm_reasoning", "dispatcher")
     graph.add_edge("dispatcher", END)

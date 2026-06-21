@@ -75,6 +75,37 @@ async def acknowledge_node(state: AgentState) -> dict:
         await session.insert()
         logger.info("Created new ChatSession for %s / %s", tenant_id, customer_phone)
     else:
+        if session.status == SessionStatus.NEEDS_HUMAN:
+            logger.info("Session %s is in NEEDS_HUMAN status. Halting auto-reply.", session.id)
+            try:
+                msg_type_enum = MessageType(message_type_str)
+            except ValueError:
+                msg_type_enum = MessageType.TEXT
+
+            inbound_log = MessageLog(
+                session_id=str(session.id),
+                tenant_id=tenant_id,
+                customer_phone=customer_phone,
+                direction=MessageDirection.INBOUND,
+                sender="customer",
+                message_type=msg_type_enum,
+                text_content=message_text if message_text else None,
+                media_url=state.get("media_url"),
+                whatsapp_message_id=message_id,
+                timestamp=now,
+            )
+            await inbound_log.insert()
+            
+            # Update session's updated_at so it bubbles up on the dashboard
+            session.updated_at = now
+            await session.save()
+            
+            return {
+                "session_id": str(session.id),
+                "skip_agent": True,
+                "status": SessionStatus.NEEDS_HUMAN,
+            }
+
         session.status = SessionStatus.AGENT_RESPONDING
         session.is_typing = True
         session.updated_at = now

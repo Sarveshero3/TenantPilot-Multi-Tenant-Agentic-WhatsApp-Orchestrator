@@ -89,6 +89,15 @@ def _build_media_tool_description(media_library: dict[str, Any]) -> str:
         "You may include a text message before the tool call line. "
         "If no media is appropriate, just reply with text only."
     )
+    lines.append("")
+    lines.append(
+        "CRITICAL: If the customer expresses frustration, anger, complains about the bot, "
+        "or explicitly requests a human operator/agent, you MUST hand over the conversation. "
+        "To do this, respond with this exact JSON tool call on its own line at the END of your response:\n"
+        '{"tool": "human_handover"}\n'
+        "Before the tool call, write a polite, reassuring message, such as: "
+        "'I apologize for the frustration. I am handing you over to a human representative right away.'"
+    )
     return "\n".join(lines)
 
 
@@ -130,7 +139,7 @@ def _clean_tool_call_from_text(text: str) -> str:
     import re
     # Remove the JSON tool call line
     cleaned = re.sub(
-        r'\{[^{}]*"tool"\s*:\s*"send_media"[^{}]*\}',
+        r'\{[^{}]*"tool"\s*:\s*"(?:send_media|human_handover)"[^{}]*\}',
         "",
         text,
     )
@@ -176,7 +185,25 @@ async def llm_reasoning_node(state: AgentState) -> dict:
             messages.append(AIMessage(content=content))
 
     # Add the current customer message
-    messages.append(HumanMessage(content=message_text))
+    message_type = state.get("message_type", "text")
+    media_url = state.get("media_url")
+
+    if message_type == "image" and media_url:
+        img_url = media_url if media_url.startswith("http") else f"https://mock.whatsapp.api/media/{media_url}"
+        content_list = [
+            {
+                "type": "text",
+                "text": message_text or "The customer sent an image. Please describe and analyze it, and respond to the customer's request using your tenant instructions.",
+            },
+            {
+                "type": "image_url",
+                "image_url": {"url": img_url},
+            },
+        ]
+        messages.append(HumanMessage(content=content_list))
+        logger.info("Multimodal HumanMessage constructed for LLM: url=%s", img_url)
+    else:
+        messages.append(HumanMessage(content=message_text))
 
     # ── Invoke LLM ───────────────────────────────────────────────────────────
     llm = _build_llm()
@@ -198,6 +225,20 @@ async def llm_reasoning_node(state: AgentState) -> dict:
         response = await llm.ainvoke(messages)
         response_text = response.content if hasattr(response, "content") else str(response)
         logger.info("LLM response received (%d chars)", len(response_text))
+
+        # Check for JSON human_handover tool call in text
+        if "human_handover" in response_text:
+            import re
+            pattern_handover = r'\{[^{}]*"tool"\s*:\s*"human_handover"[^{}]*\}'
+            if re.search(pattern_handover, response_text):
+                clean_text = _clean_tool_call_from_text(response_text)
+                logger.info("LLM human_handover tool call detected")
+                return {
+                    "response_type": "handover",
+                    "response_text": clean_text or "I apologize for the frustration. Handing you over to a human assistant.",
+                    "response_media_url": None,
+                    "response_media_filename": None,
+                }
 
         # ── Check for native tool calls (if LLM supports structured tool calling)
         if hasattr(response, "tool_calls") and response.tool_calls:
