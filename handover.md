@@ -2,6 +2,15 @@
 
 > This file reflects CURRENT status only (overwrite each update, don't append).
 
+## ⚠️ CRITICAL: Terminal Commands
+
+**Antigravity IDE uses PowerShell by default. DO NOT run PowerShell commands.**
+Prefix ALL terminal commands with `cmd /c` to force cmd.exe. Example:
+```
+cmd /c "git add . && git commit -m \"message\""
+```
+See `lessons.md` L-002 for details.
+
 ## Done
 
 - Initialized project state files (`agent.md`, `lessons.md`, `handover.md`)

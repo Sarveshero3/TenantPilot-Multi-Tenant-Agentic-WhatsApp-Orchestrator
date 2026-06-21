@@ -28,11 +28,13 @@
 - Required by the assignment.
 - 4-node stateful graph: Acknowledge → Context Retriever → LLM Reasoning → Dispatcher.
 
-### LLM Provider: OpenAI (GPT-4o-mini default, GPT-4o for multimodal bonus)
+### LLM Provider: NVIDIA Nemotron-3-nano-omni-30b-a3b-reasoning (via NVIDIA AI Endpoints)
 
-- Cost-effective for prototype.
-- Tool-calling support for media dispatch decisions.
-- Easy swap to Anthropic if needed (LangChain abstraction).
+- **Free** — no API cost, critical for prototype budget.
+- Multimodal (handles text + images natively) — covers the bonus inbound image parsing.
+- Reasoning-capable with configurable `reasoning_budget`.
+- Integrated via `langchain_nvidia_ai_endpoints.ChatNVIDIA` — native LangChain compatibility.
+- Falls back gracefully if NVIDIA endpoint is down (log error, skip LLM step).
 
 ### Frontend: React + Vite + Tailwind CSS v4
 
@@ -414,9 +416,9 @@ WHATSAPP_PHONE_NUMBER_ID=<default-phone-id>
 WHATSAPP_API_VERSION=v20.0
 WHATSAPP_VERIFY_TOKEN=<random-string-for-webhook-verification>
 
-# LLM
-OPENAI_API_KEY=<openai-key>
-LLM_MODEL=gpt-4o-mini
+# LLM (NVIDIA AI Endpoints — free tier)
+NVIDIA_API_KEY=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
+LLM_MODEL=nvidia/nemotron-3-nano-omni-30b-a3b-reasoning
 
 # App
 APP_ENV=development
@@ -490,10 +492,21 @@ LOG_LEVEL=INFO
 - **Decision:** Use FastAPI's `BackgroundTasks` (or `asyncio.create_task()`) to kick off the graph run after returning 200.
 - **Rationale:** Simplest approach. No external task queue (Celery/Redis) needed for prototype. If scaling, would migrate to a proper task queue.
 
-### ADR-005: OpenAI GPT-4o-mini as default LLM
-- **Context:** Need tool-calling support for media dispatch decisions.
-- **Decision:** GPT-4o-mini (cost-effective, fast, good tool-calling).
-- **Rationale:** Cheapest model with reliable tool-calling. Can upgrade to GPT-4o for multimodal bonus feature.
+### ADR-005: NVIDIA Nemotron-3-nano-omni-30b as default LLM
+- **Context:** Need tool-calling support for media dispatch decisions. Budget constraint — prefer free models.
+- **Decision:** NVIDIA Nemotron-3-nano-omni-30b-a3b-reasoning via `langchain_nvidia_ai_endpoints`.
+- **Rationale:** Completely free API, multimodal (covers bonus image parsing), reasoning-capable with configurable budget, and has native LangChain integration via `ChatNVIDIA`. No API cost at all vs. GPT-4o-mini's per-token charges.
+- **Integration pattern:**
+  ```python
+  from langchain_nvidia_ai_endpoints import ChatNVIDIA
+  client = ChatNVIDIA(
+      model="nvidia/nemotron-3-nano-omni-30b-a3b-reasoning",
+      api_key=os.getenv("NVIDIA_API_KEY"),
+      temperature=0.6, top_p=0.95,
+      max_tokens=65536, reasoning_budget=16384,
+      chat_template_kwargs={"enable_thinking": True},
+  )
+  ```
 
 ### ADR-006: React + Vite + Tailwind for frontend
 - **Context:** Need a "lightweight" dashboard per assignment spec.
@@ -508,7 +521,7 @@ LOG_LEVEL=INFO
 |-----------|------|------|-------|
 | WhatsApp API calls | ✅ MockWhatsAppClient logs payloads | Only if Meta approves sandbox | Toggle via `WHATSAPP_MODE` env var |
 | MongoDB | — | ✅ Real MongoDB Atlas M0 | Free tier, always real |
-| OpenAI LLM | — | ✅ Real API calls | Need API key in `.env` |
+| NVIDIA LLM | — | ✅ Real API calls (free tier) | Need `NVIDIA_API_KEY` in `.env` |
 | Webhook inbound | ✅ curl/script simulates Meta payload | Real when Meta sandbox is wired | Use ngrok for HTTPS tunnel |
 | Frontend data | — | ✅ Reads from real DB via API | Polling-based initially |
 | Broadcast | ✅ Stub API, logs intent | — | UI exists, backend is a stub |
