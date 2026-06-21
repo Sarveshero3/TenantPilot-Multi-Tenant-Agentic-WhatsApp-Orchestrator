@@ -72,3 +72,14 @@ from app.api.dashboard import router as dashboard_router
 
 app.include_router(webhook_router, prefix="/api")
 app.include_router(dashboard_router, prefix="/api")
+
+
+# ── Static files (production Docker build serves React frontend) ──────────────
+import os
+from pathlib import Path
+
+_static_dir = Path(__file__).resolve().parent.parent / "static"
+if _static_dir.is_dir():
+    from fastapi.staticfiles import StaticFiles
+    app.mount("/", StaticFiles(directory=str(_static_dir), html=True), name="static")
+    logger.info("Serving frontend from %s", _static_dir)

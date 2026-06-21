@@ -465,9 +465,9 @@ LOG_LEVEL=INFO
 | 4 | LangGraph graph + 4 nodes (Task 3) | Claude Opus 4.6 (Thinking) | ✅ COMPLETE |
 | 5 | Async webhook handler (Task 4) | Claude Opus 4.6 (Thinking) | ✅ COMPLETE |
 | 6 | React dashboard (Task 5) | Codex + Claude Opus 4.6 | ✅ COMPLETE |
-| 7 | Dockerfile + Cloud Run (Task 6) | Gemini 3.1 Pro (High) | ⬜ NOT STARTED |
+| 7 | Dockerfile + Docker Compose (Task 6) | Claude Opus 4.6 | ✅ COMPLETE |
 | 8 | Debugging (any phase) | Gemini 3.5 Flash → Sonnet → Opus | ⬜ AS NEEDED |
-| 9 | README + docs | Gemini 3.5 Flash (High) | ⬜ NOT STARTED |
+| 9 | README + docs | Claude Opus 4.6 | ✅ COMPLETE |
 | 10 | Final cleanup/refactor | Claude Sonnet 4.6 (Thinking) | ⬜ NOT STARTED |
 
 ---
