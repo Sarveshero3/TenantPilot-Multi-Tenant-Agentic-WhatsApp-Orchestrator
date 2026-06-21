@@ -458,7 +458,7 @@ LOG_LEVEL=INFO
 | Phase | Task | Assigned Model | Status |
 |-------|------|----------------|--------|
 | 1 | Read PDF + Implementation Plan | Claude Opus 4.6 (Thinking) | ✅ COMPLETE |
-| 2 | DB schema + models (Task 1) | Claude Sonnet 4.6 (Thinking) | ⬜ NOT STARTED |
+| 2 | DB schema + models (Task 1) | Claude Sonnet 4.6 (Thinking) | ✅ COMPLETE |
 | 3 | WhatsApp Cloud API helpers (Task 2) | GPT-5.3-Codex | ⬜ NOT STARTED |
 | 4 | LangGraph graph + 4 nodes (Task 3) | Claude Opus 4.6 (Thinking) | ⬜ NOT STARTED |
 | 5 | Async webhook handler (Task 4) | GPT-5.3-Codex | ⬜ NOT STARTED |

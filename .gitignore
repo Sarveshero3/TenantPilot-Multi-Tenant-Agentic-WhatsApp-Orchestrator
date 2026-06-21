@@ -1,0 +1,44 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.egg-info/
+*.egg
+dist/
+build/
+.eggs/
+*.whl
+
+# Environments
+.env
+.venv
+venv/
+env/
+ENV/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# Node / Frontend
+node_modules/
+frontend/dist/
+frontend/.vite/
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+*.log
+
+# Distribution / packaging
+*.tar.gz
+*.zip
+
+# Docker
+*.dockerignore
