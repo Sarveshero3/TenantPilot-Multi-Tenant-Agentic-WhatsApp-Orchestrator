@@ -132,23 +132,25 @@ class MessageLog(Document):
 
 ### Task 2: WhatsApp Cloud API Integration
 
-**What:** A `WhatsAppClient` class behind an interface/protocol so it can be swapped between `RealWhatsAppClient` and `MockWhatsAppClient`.
+**Status:** ✅ COMPLETE in Phase 3.
+
+**What:** A `WhatsAppClient` protocol plus `RealWhatsAppClient` and `MockWhatsAppClient`, selected through `get_whatsapp_client()`.
 
 **API calls implemented:**
 1. **Mark as read** — `POST /v20.0/{phone_number_id}/messages` with `{"messaging_product": "whatsapp", "status": "read", "message_id": "<id>"}`
 2. **Typing indicator ON** — `POST /v20.0/{phone_number_id}/messages` with `{"messaging_product": "whatsapp", "recipient_type": "individual", "to": "<phone>", "type": "typing_indicator", "typing_indicator": {"type": "text"}}`
-3. **Typing indicator OFF** — same endpoint, `"typing_indicator": {"type": "stop"}`  *(Note: verify from Meta docs if "stop" is a valid type or if typing auto-expires — if so, just skip the OFF call)*
-4. **Send text** — `POST /v20.0/{phone_number_id}/messages` with `{"messaging_product": "whatsapp", "to": "<phone>", "type": "text", "text": {"body": "<markdown text>"}}`
-5. **Send image** — same endpoint with `{"type": "image", "image": {"link": "<url>"}}`
-6. **Send document** — same endpoint with `{"type": "document", "document": {"link": "<url>", "filename": "<name>"}}`
+3. **Typing indicator OFF** — same endpoint with `{"messaging_product": "whatsapp", "recipient_type": "individual", "to": "<phone>", "type": "typing_indicator", "typing_indicator": {"type": "stop"}}`
+4. **Send text** — `POST /v20.0/{phone_number_id}/messages` with `{"messaging_product": "whatsapp", "to": "<phone>", "type": "text", "text": {"body": "<markdown text>"}}`; WhatsApp markdown such as `*bold*` and `_italic_` is passed through unchanged.
+5. **Send image** — same endpoint with `{"messaging_product": "whatsapp", "to": "<phone>", "type": "image", "image": {"link": "<url>"}}`
+6. **Send document** — same endpoint with `{"messaging_product": "whatsapp", "to": "<phone>", "type": "document", "document": {"link": "<url>", "filename": "<name>"}}`
 
-**Mock mode:** `MockWhatsAppClient` implements the same interface but prints the exact JSON payload, headers, and endpoint to stdout/logger instead of making HTTP calls. This demonstrates Meta API mastery even without live credentials.
+**Mock mode:** `MockWhatsAppClient` implements the same interface and logs/returns the exact method, endpoint, headers, and JSON payload instead of making HTTP calls. It uses `<PHONE_NUMBER_ID>` and `<WHATSAPP_ACCESS_TOKEN>` placeholders when no Meta credentials are configured, so Phase 4 can run end-to-end without live sandbox approval.
 
 **Files:**
-- `backend/app/whatsapp/client_interface.py` — Protocol/ABC
-- `backend/app/whatsapp/real_client.py` — httpx-based real client
-- `backend/app/whatsapp/mock_client.py` — logs payloads
-- `backend/app/whatsapp/__init__.py` — factory function that returns mock or real based on env var `WHATSAPP_MODE=mock|real`
+- `backend/app/whatsapp/client_interface.py` — `WhatsAppClient` protocol plus shared `WhatsAppPayloadBuilder`
+- `backend/app/whatsapp/real_client.py` — `httpx.AsyncClient` Meta Graph API implementation
+- `backend/app/whatsapp/mock_client.py` — mock implementation that logs exact request shape
+- `backend/app/whatsapp/__init__.py` — `get_whatsapp_client()` factory based on `WHATSAPP_MODE=mock|real`, with fallback to mock if real mode lacks an access token
 
 **Env vars needed:**
 - `WHATSAPP_MODE` — `mock` or `real`
@@ -459,7 +461,7 @@ LOG_LEVEL=INFO
 |-------|------|----------------|--------|
 | 1 | Read PDF + Implementation Plan | Claude Opus 4.6 (Thinking) | ✅ COMPLETE |
 | 2 | DB schema + models (Task 1) | Claude Sonnet 4.6 (Thinking) | ✅ COMPLETE |
-| 3 | WhatsApp Cloud API helpers (Task 2) | GPT-5.3-Codex | ⬜ NOT STARTED |
+| 3 | WhatsApp Cloud API helpers (Task 2) | GPT-5.5 | ✅ COMPLETE |
 | 4 | LangGraph graph + 4 nodes (Task 3) | Claude Opus 4.6 (Thinking) | ⬜ NOT STARTED |
 | 5 | Async webhook handler (Task 4) | GPT-5.3-Codex | ⬜ NOT STARTED |
 | 6 | React dashboard (Task 5) | GPT-5.3-Codex | ⬜ NOT STARTED |

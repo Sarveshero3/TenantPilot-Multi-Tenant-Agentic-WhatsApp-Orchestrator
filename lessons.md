@@ -25,6 +25,15 @@
 - **Fix:** Let pip resolve the latest compatible versions. The installed versions are: `beanie==2.0.0`, `pydantic==2.13.4`, `fastapi==0.138.0`, `motor==3.7.1`, `uvicorn==0.49.0`. Updated `requirements.txt` to unpinned minimums.
 - **Takeaway:** On Python 3.14 (cutting-edge), always use `>=` bounds or no version pins, not `==` exact pins for packages that need compiled extensions.
 
+### L-004: Use Python 3.11 for backend validation in Zed
+- **What happened:** The default `python` resolves to Python 3.14, but the project targets Python 3.11+ and the user confirmed a local Python 3.11 environment is safe to use.
+- **Fix:** Used `py -3.11` for compile/import/smoke checks. A local `.venv` can be created with `py -3.11 -m venv .venv` if dependency isolation is needed later.
+- **Takeaway:** In Zed, do not inherit the old Antigravity `cmd /c` command rule. Prefer direct commands and explicitly select `py -3.11` for backend work.
+
+### L-005: Keep WhatsApp mock and real payloads shared
+- **What happened:** The assignment grades exact WhatsApp Cloud API JSON shapes, especially `typing_indicator`.
+- **Fix:** Added one shared `WhatsAppPayloadBuilder` used by both `MockWhatsAppClient` and `RealWhatsAppClient`, so mock logs and real HTTP calls cannot drift.
+- **Takeaway:** For API-spec-sensitive code, centralize payload construction and have mock mode return/log the exact outbound request shape.
 
 
 
