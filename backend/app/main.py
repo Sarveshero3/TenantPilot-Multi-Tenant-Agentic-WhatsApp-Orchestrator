@@ -66,11 +66,9 @@ async def health_check():
     return {"status": "ok", "env": settings.app_env}
 
 
-# ── Routers (mounted after models are defined) ────────────────────────────────
-# Routers will be imported and mounted here in Phase 3/4/5.
-# Keeping the import block here as the canonical mounting point.
-#
-# from app.api.webhook import router as webhook_router
-# from app.api.dashboard import router as dashboard_router
-# app.include_router(webhook_router, prefix="/api")
-# app.include_router(dashboard_router, prefix="/api")
+# ── Routers ───────────────────────────────────────────────────────────────────
+from app.api.webhook import router as webhook_router
+from app.api.dashboard import router as dashboard_router
+
+app.include_router(webhook_router, prefix="/api")
+app.include_router(dashboard_router, prefix="/api")

@@ -11,25 +11,29 @@
 
 ## Done
 
-- Phase 1: Implementation Plan written in `agent.md` (Claude Opus 4.6)
+- Phase 1: Implementation Plan — `agent.md` (Claude Opus 4.6)
 - Phase 2: DB schema + models + FastAPI skeleton (Claude Sonnet 4.6)
-  - `backend/app/config.py`, `backend/app/db.py`, `backend/app/models/*`, `backend/app/main.py`
-  - `backend/scripts/seed_tenants.py`, `backend/requirements.txt`, `.env.example`, `.gitignore`
 - Phase 3: WhatsApp Cloud API helpers (GPT-5.5)
-  - `backend/app/whatsapp/client_interface.py` — `WhatsAppClient` protocol + `WhatsAppPayloadBuilder`
-  - `backend/app/whatsapp/real_client.py` — httpx-based real Meta Graph API client
-  - `backend/app/whatsapp/mock_client.py` — logs exact JSON payloads
-  - `backend/app/whatsapp/__init__.py` — `get_whatsapp_client()` factory
 - Phase 4: LangGraph agent — 4-node pipeline (Claude Opus 4.6)
-  - `backend/app/agent/state.py` — `AgentState` TypedDict (14 fields, total=False for partial updates)
-  - `backend/app/agent/nodes/acknowledge.py` — mark read, typing ON, session upsert, inbound log
-  - `backend/app/agent/nodes/context_retriever.py` — load tenant config + last 5 messages
-  - `backend/app/agent/nodes/llm_reasoning.py` — NVIDIA Nemotron LLM with send_media tool-calling
-  - `backend/app/agent/nodes/dispatcher.py` — send text/image/document, typing OFF, outbound log
-  - `backend/app/agent/graph.py` — linear StateGraph: acknowledge -> context_retriever -> llm_reasoning -> dispatcher -> END
-  - `backend/app/agent/__init__.py` — exports `agent_graph`, `AgentState`
-  - `backend/app/agent/nodes/__init__.py` — exports all 4 node functions
-  - `backend/scripts/test_agent_graph.py` — smoke test (all passed)
+- Phase 5: Webhook + Dashboard REST API (Claude Opus 4.6)
+  - `backend/app/api/webhook.py` — GET verify (hub.verify_token) + POST inbound (BackgroundTasks → agent graph)
+  - `backend/app/api/dashboard.py` — 5 endpoints: list/get tenants, list sessions, get messages, broadcast
+  - `backend/app/api/__init__.py` — clean exports
+  - `backend/app/main.py` — routers mounted at /api prefix
+  - `backend/scripts/test_api_routes.py` — OpenAPI schema verification (all 7 paths confirmed)
+
+## Full API Surface
+
+| Method | Path | Purpose |
+|--------|------|---------|
+| GET | `/health` | Liveness probe |
+| GET | `/api/webhook` | Meta verification challenge |
+| POST | `/api/webhook` | Inbound WhatsApp message handler |
+| GET | `/api/tenants` | List all tenants |
+| GET | `/api/tenants/{tenant_id}` | Get one tenant |
+| GET | `/api/sessions` | List sessions (?tenant_id= filter) |
+| GET | `/api/sessions/{session_id}/messages` | Message history |
+| POST | `/api/broadcast` | Send manual message |
 
 ## In Progress
 
@@ -37,41 +41,40 @@
 
 ## Next Step (exact)
 
-- **HANDOFF REQUIRED** — switch to Phase 5 (GPT-5.3-Codex or equivalent) for:
-  - `backend/app/api/webhook.py` — GET verification + POST inbound handler with `BackgroundTasks`
-  - `backend/app/api/dashboard.py` — REST API for frontend (tenants, sessions, messages, broadcast)
-  - Update `backend/app/main.py` to mount the routers
+- **HANDOFF REQUIRED** — switch to Phase 6 for **React dashboard frontend** (Task 5):
+  - Use Vite + React + TypeScript
+  - Tenant selector sidebar → Session list → Message thread view
+  - Real-time typing indicators
+  - Connect to dashboard REST API above
+  - See `agent.md` Phase 6 for full spec
 
 ## Known Broken / Blocked
 
-- LangGraph pipeline requires MongoDB to be running for end-to-end test (nodes do DB reads/writes)
-- NVIDIA_API_KEY needed in `.env` for real LLM calls; without it, LLM node returns a fallback text response
-- Meta WhatsApp Business sandbox approval status unknown — mock mode default
-- Frontend deployment target is an **open decision** — ask the human at Phase 7
+- Backend requires MongoDB to run (DB seed needed first)
+- NVIDIA_API_KEY in `.env` for real LLM calls; without it, LLM node returns fallback text
+- Meta WhatsApp sandbox approval unknown — mock mode default
+- Frontend deployment target is an **open decision** — ask the human
 
-## How to Run Locally Right Now
+## How to Run Locally
 
 ```
-# 1. Set up .env (copy from .env.example, fill MONGODB_URI + NVIDIA_API_KEY)
 cd backend
 pip install -r requirements.txt
-uvicorn app.main:app --reload --port 8000
-# Visit: http://localhost:8000/health
 
-# 2. Seed demo tenants
+# Set up .env (copy from .env.example, fill MONGODB_URI + NVIDIA_API_KEY)
+uvicorn app.main:app --reload --port 8000
+
+# Visit: http://localhost:8000/docs  → Full Swagger UI with all 7 endpoints
+# Health: http://localhost:8000/health
+
+# Seed demo tenants
 python -m scripts.seed_tenants
 
-# 3. Smoke test the agent graph (no DB/LLM needed)
+# Run smoke tests (no DB/LLM required)
+python scripts/test_imports.py
 python scripts/test_agent_graph.py
+python scripts/test_api_routes.py
 ```
-
-## WhatsApp Mode
-
-**Mock mode** (`WHATSAPP_MODE=mock`) — no real Meta credentials needed.
-
-## Tunnel URL
-
-Not set yet — generate with `ngrok http 8000` when testing real webhooks.
 
 ## Model/Editor That Did This Work
 
@@ -79,3 +82,4 @@ Not set yet — generate with `ngrok http 8000` when testing real webhooks.
 - Phase 2: **Claude Sonnet 4.6 (Thinking)** — DB schema + models + FastAPI skeleton
 - Phase 3: **GPT-5.5 in Zed** — WhatsApp Cloud API helpers
 - Phase 4: **Claude Opus 4.6 (Thinking)** — LangGraph agent (4 nodes + graph)
+- Phase 5: **Claude Opus 4.6 (Thinking)** — Webhook + Dashboard REST API

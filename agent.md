@@ -463,7 +463,7 @@ LOG_LEVEL=INFO
 | 2 | DB schema + models (Task 1) | Claude Sonnet 4.6 (Thinking) | ✅ COMPLETE |
 | 3 | WhatsApp Cloud API helpers (Task 2) | GPT-5.5 | ✅ COMPLETE |
 | 4 | LangGraph graph + 4 nodes (Task 3) | Claude Opus 4.6 (Thinking) | ✅ COMPLETE |
-| 5 | Async webhook handler (Task 4) | GPT-5.3-Codex | ⬜ NOT STARTED |
+| 5 | Async webhook handler (Task 4) | Claude Opus 4.6 (Thinking) | ✅ COMPLETE |
 | 6 | React dashboard (Task 5) | GPT-5.3-Codex | ⬜ NOT STARTED |
 | 7 | Dockerfile + Cloud Run (Task 6) | Gemini 3.1 Pro (High) | ⬜ NOT STARTED |
 | 8 | Debugging (any phase) | Gemini 3.5 Flash → Sonnet → Opus | ⬜ AS NEEDED |
