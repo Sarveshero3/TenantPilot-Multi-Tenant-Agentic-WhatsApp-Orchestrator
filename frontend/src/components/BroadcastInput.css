@@ -1,0 +1,50 @@
+.broadcast-input {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 12px;
+  padding: 16px;
+  border-top: 1px solid var(--border);
+  background: rgba(2, 6, 23, 0.42);
+}
+
+.broadcast-input textarea {
+  width: 100%;
+  min-height: 52px;
+  max-height: 140px;
+  resize: vertical;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  outline: none;
+  padding: 14px 15px;
+  background: rgba(255, 255, 255, 0.07);
+  color: var(--text);
+  line-height: 1.45;
+  transition: border-color 160ms ease, box-shadow 160ms ease, background 160ms ease;
+}
+
+.broadcast-input textarea::placeholder {
+  color: var(--muted-strong);
+}
+
+.broadcast-input textarea:focus {
+  border-color: rgba(59, 130, 246, 0.62);
+  background: rgba(255, 255, 255, 0.09);
+  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.12);
+}
+
+.broadcast-input button {
+  align-self: stretch;
+  border: 0;
+  border-radius: var(--radius-lg);
+  padding: 0 20px;
+  background: linear-gradient(135deg, var(--blue), var(--purple));
+  box-shadow: 0 18px 42px rgba(59, 130, 246, 0.24);
+  color: #fff;
+  font-weight: 900;
+  transition: transform 160ms ease, filter 160ms ease;
+}
+
+.broadcast-input button:not(:disabled):hover {
+  transform: translateY(-1px);
+  filter: brightness(1.08);
+}

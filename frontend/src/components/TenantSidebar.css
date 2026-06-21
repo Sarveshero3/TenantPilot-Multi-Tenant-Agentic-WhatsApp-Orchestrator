@@ -1,0 +1,116 @@
+.tenant-sidebar {
+  padding: 18px;
+}
+
+.tenant-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 6px 4px 18px;
+}
+
+.brand-mark {
+  display: grid;
+  width: 46px;
+  height: 46px;
+  place-items: center;
+  border: 1px solid rgba(59, 130, 246, 0.34);
+  border-radius: 16px;
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.34), rgba(139, 92, 246, 0.28));
+  box-shadow: 0 18px 40px rgba(59, 130, 246, 0.18);
+  font-weight: 900;
+}
+
+.tenant-brand h1 {
+  margin: 0;
+  font-size: 1.04rem;
+  letter-spacing: -0.04em;
+}
+
+.tenant-brand p {
+  margin: 3px 0 0;
+  color: var(--muted);
+  font-size: 0.76rem;
+}
+
+.tenant-health {
+  margin: 0 4px 18px;
+}
+
+.tenant-header {
+  margin: 0 -18px;
+}
+
+.tenant-list {
+  display: grid;
+  gap: 12px;
+  padding: 18px 2px 4px;
+}
+
+.tenant-card {
+  display: grid;
+  grid-template-columns: 42px 1fr auto;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 13px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: rgba(255, 255, 255, 0.045);
+  color: var(--text);
+  text-align: left;
+  transition: transform 160ms ease, border-color 160ms ease, background 160ms ease;
+}
+
+.tenant-card:hover,
+.tenant-card-active {
+  transform: translateY(-1px);
+  border-color: rgba(59, 130, 246, 0.48);
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.16), rgba(139, 92, 246, 0.11));
+}
+
+.tenant-card-active {
+  box-shadow: 0 16px 42px rgba(59, 130, 246, 0.14);
+}
+
+.tenant-avatar {
+  display: grid;
+  width: 42px;
+  height: 42px;
+  place-items: center;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.09);
+  color: var(--text-soft);
+  font-size: 0.82rem;
+  font-weight: 900;
+}
+
+.tenant-copy {
+  min-width: 0;
+}
+
+.tenant-name,
+.tenant-meta {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tenant-name {
+  font-weight: 800;
+}
+
+.tenant-meta {
+  margin-top: 4px;
+  color: var(--muted);
+  font-size: 0.76rem;
+}
+
+.tenant-status-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 999px;
+  background: var(--emerald);
+  box-shadow: 0 0 20px rgba(16, 185, 129, 0.55);
+}

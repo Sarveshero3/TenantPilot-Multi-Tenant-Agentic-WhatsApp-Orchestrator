@@ -16,11 +16,18 @@
 - Phase 3: WhatsApp Cloud API helpers (GPT-5.5)
 - Phase 4: LangGraph agent — 4-node pipeline (Claude Opus 4.6)
 - Phase 5: Webhook + Dashboard REST API (Claude Opus 4.6)
-  - `backend/app/api/webhook.py` — GET verify (hub.verify_token) + POST inbound (BackgroundTasks → agent graph)
-  - `backend/app/api/dashboard.py` — 5 endpoints: list/get tenants, list sessions, get messages, broadcast
-  - `backend/app/api/__init__.py` — clean exports
-  - `backend/app/main.py` — routers mounted at /api prefix
-  - `backend/scripts/test_api_routes.py` — OpenAPI schema verification (all 7 paths confirmed)
+- Phase 6: React dashboard frontend (Codex + Claude Opus 4.6)
+  - Codex scaffolded all components, Claude fixed package.json/tsconfig/vite-env.d.ts
+  - `frontend/src/types/index.ts` — TS interfaces matching backend API
+  - `frontend/src/api/client.ts` — fetch wrapper with typed methods
+  - `frontend/src/App.tsx` — 3-panel layout with polling (3s sessions, 2s messages)
+  - `frontend/src/components/TenantSidebar.tsx` — tenant list with initials + status
+  - `frontend/src/components/SessionList.tsx` — sessions with status badges, typing indicators, relative timestamps
+  - `frontend/src/components/MessageThread.tsx` — chat bubbles (inbound/outbound), image/document rendering, auto-scroll
+  - `frontend/src/components/BroadcastInput.tsx` — reply textarea → POST /api/broadcast
+  - `frontend/src/components/StatusBadge.tsx` — color-coded session status
+  - `frontend/src/components/TypingIndicator.tsx` — animated 3-dot indicator
+  - All CSS files with dark theme, glassmorphism, shimmer loading skeletons, toast errors
 
 ## Full API Surface
 
@@ -41,39 +48,37 @@
 
 ## Next Step (exact)
 
-- **HANDOFF REQUIRED** — switch to Phase 6 for **React dashboard frontend** (Task 5):
-  - Use Vite + React + TypeScript
-  - Tenant selector sidebar → Session list → Message thread view
-  - Real-time typing indicators
-  - Connect to dashboard REST API above
-  - See `agent.md` Phase 6 for full spec
+- **Phase 7: Dockerfile + Docker Compose + deployment config**
+  - Multi-stage Dockerfile for backend (Python) and frontend (Node → nginx)
+  - `docker-compose.yml` for local dev (backend + mongo + frontend)
+  - Cloud Run / Render deployment config
+- **Phase 9: README + documentation**
+  - Full setup guide, architecture diagram, demo screenshots
 
 ## Known Broken / Blocked
 
 - Backend requires MongoDB to run (DB seed needed first)
-- NVIDIA_API_KEY in `.env` for real LLM calls; without it, LLM node returns fallback text
+- NVIDIA_API_KEY set in `.env` ✅
 - Meta WhatsApp sandbox approval unknown — mock mode default
-- Frontend deployment target is an **open decision** — ask the human
+- Frontend shows "API offline" until backend is started
+- Root-level `package-lock.json` (133 bytes, leftover from Codex) — harmless
 
 ## How to Run Locally
 
-```
+```bash
+# Backend
 cd backend
 pip install -r requirements.txt
-
-# Set up .env (copy from .env.example, fill MONGODB_URI + NVIDIA_API_KEY)
 uvicorn app.main:app --reload --port 8000
+# Seed tenants: python -m scripts.seed_tenants
 
-# Visit: http://localhost:8000/docs  → Full Swagger UI with all 7 endpoints
-# Health: http://localhost:8000/health
+# Frontend
+cd frontend
+npm install
+npm run dev
+# Visit: http://localhost:5173
 
-# Seed demo tenants
-python -m scripts.seed_tenants
-
-# Run smoke tests (no DB/LLM required)
-python scripts/test_imports.py
-python scripts/test_agent_graph.py
-python scripts/test_api_routes.py
+# Backend Swagger: http://localhost:8000/docs
 ```
 
 ## Model/Editor That Did This Work
@@ -83,3 +88,4 @@ python scripts/test_api_routes.py
 - Phase 3: **GPT-5.5 in Zed** — WhatsApp Cloud API helpers
 - Phase 4: **Claude Opus 4.6 (Thinking)** — LangGraph agent (4 nodes + graph)
 - Phase 5: **Claude Opus 4.6 (Thinking)** — Webhook + Dashboard REST API
+- Phase 6: **Codex** (scaffold) + **Claude Opus 4.6** (package fix, TS fix, verification)
