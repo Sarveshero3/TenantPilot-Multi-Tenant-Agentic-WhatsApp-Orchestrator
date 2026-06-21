@@ -10,38 +10,28 @@
 
 ## Done
 
-- Phase 1: Implementation Plan — `agent.md`
-- Phase 2: DB schema + models + FastAPI skeleton
-- Phase 3: WhatsApp Cloud API helpers
-- Phase 4: LangGraph agent — 4-node pipeline
-- Phase 5: Webhook + Dashboard REST API
-- Phase 6: React dashboard frontend (Codex scaffold + Opus fixes)
-- Phase 7: Dockerfile (multi-stage) + docker-compose.yml (3-service)
-- Phase 9: README.md with screenshots, architecture diagram, full docs
-- Phase 10: Final cleanup, verification & Bonus Tasks (Signature Security, Multimodal Inbound Media Parsing, Fallback Handover to NEEDS_HUMAN)
+- Phase 1–10: All implementation complete (see agent.md for details)
+- MongoDB Atlas connected and seeded (cluster0.y4ydc1i.mongodb.net)
+- Beanie 2.x migration (pymongo.AsyncMongoClient instead of motor)
+- Config fix: .env path resolved from project root, not CWD
+- Tenant A phone_number_id updated to real Meta ID (1202145532976125)
+- WHATSAPP_MODE switched to "real"
+- ngrok tunnel active: https://4eaf-103-79-170-186.ngrok-free.app
+- Webhook verified with Meta
 
 ## In Progress
 
-- None.
+- Live WhatsApp testing (8 test messages) — awaiting Test #1
 
 ## Next Step
 
-- The project is 100% complete and fully verified! All test suites pass successfully.
-- If live testing is desired:
-  1. Boot up the MongoDB instance
-  2. Input a valid `NVIDIA_API_KEY` in `.env`
-  3. Start the dev server or run `docker compose up`
+- User sends Test #1 from phone (+919315860035) to the WhatsApp Business number
+- Watch backend logs for webhook POST + agent pipeline
+- Watch dashboard for session appearing under luxury-furniture tenant
+- Log results to evals.md
 
-## Model/Editor History
+## Running Services
 
-| Phase | Model | Status |
-|-------|-------|--------|
-| 1 | Claude Opus 4.6 | ✅ |
-| 2 | Claude Sonnet 4.6 | ✅ |
-| 3 | GPT-5.5 (Zed) | ✅ |
-| 4 | Claude Opus 4.6 | ✅ |
-| 5 | Claude Opus 4.6 | ✅ |
-| 6 | Codex + Claude Opus 4.6 | ✅ |
-| 7 | Claude Opus 4.6 | ✅ |
-| 9 | Claude Opus 4.6 | ✅ |
-| 10 | Gemini 3.5 Flash (High) | ✅ |
+- Backend: `py -3.11 -m uvicorn app.main:app --port 8000` (task-936)
+- Frontend: `npm run dev` on port 5173 (task-769)
+- ngrok: `ngrok http 8000` (task-884)

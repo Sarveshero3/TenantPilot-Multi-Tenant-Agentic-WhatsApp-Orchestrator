@@ -32,6 +32,7 @@ class AgentState(TypedDict, total=False):
 
     # ── Set by Acknowledge node ──────────────────────────────────────────────
     session_id: str               # str(ChatSession._id) after upsert
+    skip_agent: bool              # Set to True if we should skip agent reasoning (e.g. human handover)
 
     # ── Set by Context Retriever node ────────────────────────────────────────
     system_prompt: str                    # Tenant's LLM system instructions

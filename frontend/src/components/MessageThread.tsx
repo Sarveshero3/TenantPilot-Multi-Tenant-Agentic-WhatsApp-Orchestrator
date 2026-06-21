@@ -43,13 +43,16 @@ function renderMessageBody(message: MessageLog) {
 
   if (message.message_type === 'document' && message.media_url) {
     return (
-      <a className="document-link" href={message.media_url} rel="noreferrer" target="_blank">
-        <span className="document-icon">PDF</span>
-        <span>
-          <strong>{message.media_filename ?? 'Download document'}</strong>
-          <small>Open public document URL</small>
-        </span>
-      </a>
+      <div className="message-document-container">
+        {message.text_content && <p style={{ marginBottom: '8px' }}>{message.text_content}</p>}
+        <a className="document-link" href={message.media_url} rel="noreferrer" target="_blank">
+          <span className="document-icon">PDF</span>
+          <span>
+            <strong>{message.media_filename ?? 'Download document'}</strong>
+            <small>Open public document URL</small>
+          </span>
+        </a>
+      </div>
     )
   }
 

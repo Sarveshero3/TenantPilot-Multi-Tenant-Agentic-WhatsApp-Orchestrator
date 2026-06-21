@@ -36,7 +36,7 @@ logger = logging.getLogger(__name__)
 TENANT_A = {
     "tenant_id": "luxury-furniture",
     "name": "Prestige Home — Luxury Furniture",
-    "whatsapp_phone_number_id": "PHONE_NUMBER_ID_TENANT_A",  # Replace with real ID
+    "whatsapp_phone_number_id": "1202145532976125",  # Replace with real ID
     "system_prompt": (
         "You are Aria, a sophisticated luxury furniture concierge for Prestige Home. "
         "Your tone is elegant, warm, and deeply knowledgeable about interior design and our collections. "
@@ -49,7 +49,7 @@ TENANT_A = {
     ),
     "media_library": {
         "catalog": MediaItem(
-            url="https://www.w3.org/WAI/WCAG21/Techniques/pdf/sample.pdf",
+            url="https://pdfobject.com/pdf/sample.pdf",
             media_type="document",
             filename="Prestige-Home-Catalog-2025.pdf",
             description="Full luxury furniture product catalog, 48 pages, PDF format",
@@ -85,7 +85,7 @@ TENANT_B = {
     ),
     "media_library": {
         "invoice": MediaItem(
-            url="https://www.w3.org/WAI/WCAG21/Techniques/pdf/sample.pdf",
+            url="https://pdfobject.com/pdf/sample.pdf",
             media_type="document",
             filename="AutoElite-Service-Invoice.pdf",
             description="Standard service invoice sheet for completed repairs",
@@ -97,7 +97,7 @@ TENANT_B = {
             description="Brake system repair diagram showing inspection points",
         ),
         "service-menu": MediaItem(
-            url="https://www.w3.org/WAI/WCAG21/Techniques/pdf/sample.pdf",
+            url="https://pdfobject.com/pdf/sample.pdf",
             media_type="document",
             filename="AutoElite-Service-Pricing-2025.pdf",
             description="Complete service menu with pricing for all maintenance packages",

@@ -117,6 +117,22 @@ async def handle_inbound(request: Request, background_tasks: BackgroundTasks):
 
                 # Skip non-message notifications (e.g., status updates)
                 if "messages" not in value:
+                    if "statuses" in value:
+                        for status in value["statuses"]:
+                            msg_id = status.get("id")
+                            status_val = status.get("status")
+                            errors = status.get("errors")
+                            recipient_id = status.get("recipient_id")
+                            if status_val == "failed":
+                                logger.error(
+                                    "WhatsApp delivery FAILED to %s: msg_id=%s, errors=%s",
+                                    recipient_id, msg_id, errors
+                                )
+                            else:
+                                logger.info(
+                                    "WhatsApp delivery status update: msg_id=%s, status=%s",
+                                    msg_id, status_val
+                                )
                     continue
 
                 metadata = value.get("metadata", {})

@@ -56,10 +56,10 @@ async def context_retriever_node(state: AgentState) -> dict:
         list(media_lib_dict.keys()),
     )
 
-    # ── 2. Load chat history (last N messages) ───────────────────────────────
     recent_messages = await MessageLog.find(
         MessageLog.session_id == session_id,
-    ).sort("+timestamp").limit(HISTORY_LIMIT).to_list()
+    ).sort("-timestamp").limit(HISTORY_LIMIT).to_list()
+    recent_messages.reverse()
 
     chat_history: list[dict[str, Any]] = []
     for msg in recent_messages:
