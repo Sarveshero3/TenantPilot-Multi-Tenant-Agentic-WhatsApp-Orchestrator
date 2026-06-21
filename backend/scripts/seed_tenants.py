@@ -21,7 +21,7 @@ import os
 # Allow running as a script from the backend/ directory
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
-from motor.motor_asyncio import AsyncIOMotorClient
+from pymongo import AsyncMongoClient
 from beanie import init_beanie
 
 from app.config import get_settings
@@ -110,7 +110,7 @@ async def seed():
     settings = get_settings()
     logger.info("Connecting to MongoDB: %s / %s", settings.mongodb_uri[:40] + "...", settings.mongodb_db_name)
 
-    client = AsyncIOMotorClient(settings.mongodb_uri)
+    client = AsyncMongoClient(settings.mongodb_uri)
     db = client[settings.mongodb_db_name]
 
     await init_beanie(database=db, document_models=[Tenant, ChatSession, MessageLog])

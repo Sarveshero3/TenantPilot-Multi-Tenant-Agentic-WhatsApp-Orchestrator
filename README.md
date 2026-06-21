@@ -92,9 +92,15 @@
 ## 🖼️ Screenshots
 
 <p align="center">
-  <img src="docs/dashboard-screenshot.png" alt="TenantPilot Dashboard - Dark Theme" width="800" />
+  <img src="docs/dashboard-screenshot.png" alt="TenantPilot Dashboard - Prestige Home Tenant" width="800" />
   <br />
-  <em>3-panel glassmorphism dashboard with real-time session monitoring</em>
+  <em>3-panel glassmorphism dashboard showing Prestige Home (Luxury Furniture) brand monitoring</em>
+</p>
+
+<p align="center">
+  <img src="docs/dashboard-autoelite.png" alt="TenantPilot Dashboard - AutoElite Tenant" width="800" />
+  <br />
+  <em>Workspace switched to AutoElite (Premium Car Care) showing its specific conversations</em>
 </p>
 
 ---
