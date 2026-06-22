@@ -110,10 +110,17 @@ async def seed():
     settings = get_settings()
     logger.info("Connecting to MongoDB: %s / %s", settings.mongodb_uri[:40] + "...", settings.mongodb_db_name)
 
-    client = AsyncMongoClient(settings.mongodb_uri)
+    import certifi
+    client = AsyncMongoClient(settings.mongodb_uri, tlsCAFile=certifi.where())
     db = client[settings.mongodb_db_name]
 
     await init_beanie(database=db, document_models=[Tenant, ChatSession, MessageLog])
+
+    # Purge old data to start fresh
+    logger.info("Purging old collections (Tenants, ChatSessions, MessageLogs)...")
+    await Tenant.find_all().delete()
+    await ChatSession.find_all().delete()
+    await MessageLog.find_all().delete()
 
     for tenant_data in [TENANT_A, TENANT_B]:
         existing = await Tenant.find_one(Tenant.tenant_id == tenant_data["tenant_id"])

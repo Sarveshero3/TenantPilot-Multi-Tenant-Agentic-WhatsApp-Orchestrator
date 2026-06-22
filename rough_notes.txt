@@ -1,0 +1,65 @@
+scratchpad_notes_tenantpilot.txt
+(rough ideas, trade-offs, issues encountered, things to clean up later)
+
+Status: Wip but working. Need to submit by today.
+
+### Core Architectural Decisions & Debates
+
+* State Machine:
+  - Option A: Standard python loop with if/else. Easy but doesn't scale.
+  - Option B: Vanilla state machine (transitions library).
+  - Option C: LangGraph. Chosen this. Why? The routing needs to be conditional (e.g., if user is frustrated, route to HUMAN_HANDOVER state. If user asks for info, retrieve context. If user asks for media, call tool). LangGraph makes the flow visual and handles state persistence out of the box. But configuration is a bit verbose ngl.
+
+* DB selection:
+  - Considered PostgreSQL (SQLAlchemy) vs MongoDB.
+  - SQL is good for structured tenant configs but business media libraries can change schema rapidly (some tenants have PDFs, others photos, others might have custom structured metadata).
+  - MongoDB Atlas is perfect because BSON is schema-less.
+  - Decided to use Beanie ODM instead of raw PyMongo or Motor.
+    * Pros: Pydantic integration, clean syntax.
+    * Cons: Beanie 2.x migration had some weird async issues during startup (keeps throwing CollectionWasNotInitialized if you query too fast during startup). Had to fix this by decoupling lifespan and adding backoff.
+
+* Webhook Async Handling:
+  - Meta demands webhook response in < 5 seconds. If you run the LLM (Nvidia Nemotron) + MongoDB queries + WhatsApp API calls synchronously, it takes like 2-4 seconds. If network lags, it exceeds 5s, Meta retries, and you get duplicate messages (infinite loop of agent replying to itself).
+  - Solution: FastAPI BackgroundTasks. Receive webhook -> extract metadata -> trigger LangGraph in `background_tasks.add_task` -> return 200 immediately.
+  - Alternative: Celery + Redis. Too much overhead for local sandbox and docker compose. BackgroundTasks works fine but memory is volatile (if container crashes, we lose execution queue). Good enough for assignment scale.
+
+---
+
+### Issues & Debugging Log
+
+- *Token Expiry Headache*:
+  - Real WhatsApp API integration works, but the Meta Developer portal temporary access token expires every 24 hours.
+  - If I submit in "real" mode, the reviewer will get "401 Unauthorized" from Meta when they test it tomorrow.
+  - So, deployed version is set to `WHATSAPP_MODE=mock`. It prints the JSON payloads in the terminal log instead of calling Meta. Real mode remains in codebase and works if you paste a fresh token.
+
+- *Cloud Run Connection Refused*:
+  - Kept getting PORT=8080 timeout on Cloud Run.
+  - First thought: Uvicorn wasn't reading port env.
+  - Real Root Cause: DB connection was blocking lifespan startup. PyMongo was failing to connect to Atlas due to SSL handshake alert 80.
+  - Why? Atlas whitelists my local IP but blocked Google Cloud Shell/Run. Had to whitelist `0.0.0.0/0` in Atlas Network Access. Also added `certifi` because python-slim didn't have correct CA certificates.
+
+- *Frontend API Origin*:
+  - Frontend built and tried to fetch from `localhost:8000` even when deployed on Cloud Run.
+  - Fixed client.ts to detect `import.meta.env.PROD` and fallback to relative URL (`""`) so it queries the same host.
+
+---
+
+### Alternative Approaches considered but dropped
+
+1. **Local LLM (Ollama)**:
+   - Wanted to use Llama 3 locally. But hosting that on Cloud Run is too expensive / slow for free tier.
+   - Switched to NVIDIA Nemotron-3-nano via LangChain endpoints (free tier). Excellent reasoning and fits within free tier.
+
+2. **WebSockets for Dashboard**:
+   - Polling is currently used (every 3 seconds to fetch sessions/messages).
+   - WebSockets would be cleaner but adds state complexity (reconnections, broadcast rooms). Kept polling for simplicity and robust state recovery on page refresh.
+
+3. **Multi-container deployment**:
+   - Separate frontend (Firebase/Vercel) and backend (Cloud Run).
+   - Dropped it. Built a unified Dockerfile that builds React, copies it to FastAPI static mount, and serves everything from one port. Saves Cloud Run allocation cost and avoids CORS setup headaches.
+
+### TODO / Cleanups:
+- [x] Fix .gitignore pattern (accidently ignored frontend lockfile - fixed with leading slash)
+- [x] Fix Dockerfile PORT env var mapping
+- [x] Decouple DB connection from Uvicorn startup (Lifespan background task)
+- [ ] Add unit tests for agent nodes (ran out of time, smoke tests scripts/test_*.py are working though)

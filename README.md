@@ -30,6 +30,10 @@
 - **Conversation history** — full message logs with session tracking
 - **Real-time dashboard** — monitor all tenants, sessions, and messages live
 
+### 🎥 Demo Video
+
+Watch the live demonstration showcasing multi-tenant agent reasoning, real-time message handling, media dispatch, and human-in-the-loop handover: **[TenantPilot Product Demo Video](https://youtu.be/Ld_t8nEorak)**
+
 ### Architecture highlights
 
 | Component       | Technology                              | Purpose                                      |
@@ -150,6 +154,20 @@ npm run dev
 - **Backend health:** http://localhost:8000/health
 - **Swagger docs:** http://localhost:8000/docs
 - **Dashboard:** http://localhost:5173
+
+### 5. Webhook local setup (ngrok)
+
+Since Meta/Facebook sends webhook payloads from their public servers, they cannot access `localhost` directly. You must set up a public HTTPS tunnel (like **ngrok**) to route traffic to your local server:
+
+1. Install ngrok and start a tunnel to port 8000:
+   ```bash
+   ngrok http 8000
+   ```
+2. Copy the forwarding HTTPS address (e.g., `https://xxxx.ngrok-free.app`).
+3. Set your webhook settings in the **Meta Developer Portal**:
+   - **Callback URL**: `https://xxxx.ngrok-free.app/api/webhook`
+   - **Verify Token**: Must match your `.env` value for `WHATSAPP_VERIFY_TOKEN`.
+4. In the Meta dashboard, subscribe to the **messages** webhook topic under **WhatsApp Webhook fields**.
 
 ---
 

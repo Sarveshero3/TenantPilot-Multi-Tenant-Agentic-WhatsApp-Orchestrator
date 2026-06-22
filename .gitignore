@@ -42,3 +42,18 @@ htmlcov/
 
 # Docker
 *.dockerignore
+
+# Project specific documentation / instruction files
+agent.md
+handover.md
+lessons.md
+evals.md
+*.pdf
+
+# Root-level unnecessary lockfile (since no package.json at root)
+/package-lock.json
+
+
+# TypeScript build info
+*.tsbuildinfo
+

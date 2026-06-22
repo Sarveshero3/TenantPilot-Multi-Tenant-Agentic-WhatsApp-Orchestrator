@@ -17,7 +17,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.config import get_settings
-from app.db import init_db, close_db
+from app.db import init_db_with_retry, close_db, is_db_connected
 
 # ── Logging ───────────────────────────────────────────────────────────────────
 settings = get_settings()
@@ -32,8 +32,13 @@ logger = logging.getLogger(__name__)
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Manage startup and shutdown events via the modern lifespan handler."""
+    import asyncio
     logger.info("TenantPilot starting up (env=%s)", settings.app_env)
-    await init_db()
+    
+    # Run database connection and Beanie initialization in the background.
+    # This prevents database connection timeouts or TLS handshake failures
+    # from blocking port binding and crashing the container startup.
+    asyncio.create_task(init_db_with_retry())
     yield
     logger.info("TenantPilot shutting down")
     await close_db()
@@ -49,6 +54,35 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
+
+# ── Global Exception Handlers ─────────────────────────────────────────────────
+from fastapi.responses import JSONResponse
+from fastapi import Request, status
+
+@app.exception_handler(Exception)
+async def global_beanie_exception_handler(request: Request, exc: Exception):
+    """
+    Handle Beanie initialization errors gracefully.
+    If database queries are run before initialization finishes, return 503.
+    """
+    exc_type_name = type(exc).__name__
+    if exc_type_name in ("CollectionWasNotInitialized", "MongoDBInitError") or "not initialized" in str(exc).lower():
+        logger.warning("Database query failed because DB is not initialized yet: %s", exc)
+        return JSONResponse(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            content={
+                "status": "error",
+                "message": "Database connection is not established yet. Please try again shortly."
+            }
+        )
+    # Default fallback
+    logger.error("Unhandled server error: %s", exc, exc_info=True)
+    return JSONResponse(
+        status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        content={"status": "error", "message": "Internal server error occurred."}
+    )
+
+
 # ── CORS ──────────────────────────────────────────────────────────────────────
 app.add_middleware(
     CORSMiddleware,
@@ -62,8 +96,16 @@ app.add_middleware(
 # ── Health check ──────────────────────────────────────────────────────────────
 @app.get("/health", tags=["system"])
 async def health_check():
-    """Simple liveness probe — returns 200 if the process is running."""
-    return {"status": "ok", "env": settings.app_env}
+    """
+    Resilient liveness probe.
+    Returns 200 OK even if database is disconnected to prevent Cloud Run from killing the container.
+    """
+    db_connected = is_db_connected()
+    return {
+        "status": "ok" if db_connected else "degraded",
+        "env": settings.app_env,
+        "database": "connected" if db_connected else "connecting"
+    }
 
 
 # ── Routers ───────────────────────────────────────────────────────────────────

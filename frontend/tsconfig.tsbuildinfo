@@ -1,1 +1,0 @@
-{"root":["./src/app.tsx","./src/main.tsx","./src/vite-env.d.ts","./src/api/client.ts","./src/components/broadcastinput.tsx","./src/components/messagethread.tsx","./src/components/sessionlist.tsx","./src/components/statusbadge.tsx","./src/components/tenantsidebar.tsx","./src/components/typingindicator.tsx","./src/types/index.ts"],"version":"5.8.3"}
